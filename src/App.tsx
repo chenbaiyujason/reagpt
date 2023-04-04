@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { message } from "antd";
 import { createEditor } from "./editor";
 
 export function useRete(create: (el: HTMLElement) => Promise<() => void>) {
@@ -8,7 +9,7 @@ export function useRete(create: (el: HTMLElement) => Promise<() => void>) {
   useEffect(() => {
     if (container) {
       create(container).then((value) => {
-        (editorRef as any).current = value;
+        (editorRef).current = value;
       });
     }
   }, [container]);
@@ -25,7 +26,11 @@ export function useRete(create: (el: HTMLElement) => Promise<() => void>) {
 }
 
 export default function App() {
-  const [setContainer] = useRete(createEditor);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [setContainer] = useRete((el) => {
+    return createEditor(el, messageApi.info);
+  });
   const ref = useRef(null);
 
   useEffect(() => {
@@ -35,8 +40,9 @@ export default function App() {
   }, [ref.current]);
 
   return (
-    <div className="App">
-      <div ref={ref} style={{ height: "100vh", width: "100vw" }}></div>
-    </div>
+      <div className="App">
+        {contextHolder}
+        <div ref={ref} style={{ height: "100vh", width: "100vw" }}></div>
+      </div>
   );
 }
